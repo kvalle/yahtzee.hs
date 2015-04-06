@@ -7,17 +7,17 @@ import Data.List
 import Data.Sequence (fromList, update)
 import Data.Foldable (toList)
 
-emptyKeep = replicate 5 False
-nilRoll = replicate 5 0
-
 
 main = do
     hSetBuffering stdin NoBuffering
-    finalRoll <- play 1 nilRoll $ replicate 5 False
+    finalRoll <- play 1 (replicate 5 0) (replicate 5 False)
+    putStrLn $ "FINAL ROLL\n=========="
+    putStrLn $ formatRoll finalRoll
+    putStrLn ""
     printResult finalRoll
 
 play :: Int -> [Int] -> [Bool] -> IO [Int]
-play n dices keeps  | n > 3 = reroll dices keeps
+play n dices keeps  | n == 3 = reroll dices keeps
 play _ dices keeps | and keeps = return dices
 play n dices keeps = do
     putStrLn $ "ROLL " ++ (show n) ++ "\n======"
