@@ -1,12 +1,64 @@
 
 import Data.List
-import System.Random  
-  
-main = do  
-    gen <- getStdGen
-    let roll = rollDice gen
+import System.Random
+import Control.Applicative
 
-    putStrLn $ formatRoll roll
+import Data.Sequence (fromList, update)
+import Data.Foldable (toList)
+
+emptyKeep = replicate 5 False
+nilRoll = replicate 5 0
+
+
+main = do
+    finalRoll <- play 1 nilRoll emptyKeep
+    printResult finalRoll
+
+play :: Int -> [Int] -> [Bool] -> IO [Int]
+play n dices _  | n > 3 = return dices
+play _ dices keeps | and keeps = return dices
+play n dices keeps = do
+    putStrLn $ "ROLL " ++ (show n) ++ "\n======"
+    --newRoll <- rollDice <$> newStdGen
+    newRoll <- reroll dices keeps
+    newKeeps <- getKeeps newRoll keeps
+    play (n + 1) newRoll newKeeps
+
+reroll :: [Int] -> [Bool] -> IO [Int]
+reroll oldRoll keeps = do
+    newRoll <- rollDice <$> newStdGen
+    putStrLn $ show newRoll
+    return $ zipWith3 (\o n k -> if k then o else n) oldRoll newRoll keeps
+
+getKeeps :: [Int] -> [Bool] -> IO [Bool]
+getKeeps roll keeps = do
+    putStr $ (formatKeeps roll keeps) ++ "  Keep? "
+    n <- getChar
+    putStrLn ""
+    case n of
+        n | n `elem` "12345" -> getKeeps roll $ toogleKeeps (read [n] - 1) keeps
+        '\n' -> return keeps
+        _    -> do
+            putStrLn "> Use the numbers 1 - 5 to keep dice, ENTER to continue."
+            getKeeps roll keeps
+
+toogleKeeps :: Int -> [Bool] -> [Bool]
+toogleKeeps n keeps = replace n newValue keeps
+    where newValue = not $ keeps !! n
+          replace i val list = toList $ update i val $ fromList list
+
+formatKeeps :: [Int] -> [Bool] -> String
+formatKeeps roll keeps = intercalate " " $ zipWith zipFn keeps $ show <$> roll
+    where zipFn = (\ k i -> if k then "(" ++ i ++ ")" else " " ++ i ++ " ")
+
+
+-- Dice
+
+rollDice :: (RandomGen g) => g -> [Int]
+rollDice gen = take 5 $ randomRs (1,6) gen
+
+printResult :: [Int] -> IO ()
+printResult roll = do
     putStrLn $ (++) "Yahtzee:         " $ show $ isYahtzee roll
     putStrLn $ (++) "Small straight:  " $ show $ isSmallStraight roll
     putStrLn $ (++) "Large straight:  " $ show $ isLargeStraight roll
@@ -14,15 +66,11 @@ main = do
     putStrLn $ (++) "Four of a kind:  " $ show $ isFourOfAKind roll
     putStrLn $ (++) "Full house:      " $ show $ isFullHouse roll
 
-rollDice :: (RandomGen g) => g -> [Int]  
-rollDice gen = sort $ take 5 $ randomRs (1,6) gen
-
-formatKeeps :: [Bool] -> String
-formatKeeps keeps = intercalate " " $ map (\k -> "[" ++ if k then "x" else " " ++ "]") keeps
-
 formatRoll :: [Int] -> String
 formatRoll roll = " " ++ (intercalate "   " $ map show roll)
 
+
+-- Check roll
 
 isYahtzee :: [Int] -> Bool
 isYahtzee (x:rest) = all (== x) rest
