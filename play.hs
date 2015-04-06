@@ -25,7 +25,6 @@ keepAll  = replicate 5 True
 
 
 main = do
-    randGen <- newStdGen
     hSetBuffering stdin NoBuffering
 
     dices <- playRoll FirstRoll (replicate 5 0) keepNone
@@ -34,7 +33,8 @@ main = do
 playRoll :: Roll -> Dices -> Keeps -> IO Dices
 playRoll _ dices keeps | and keeps = return dices
 playRoll roll dices keeps = do
-    newDices <- reroll dices keeps
+    gen <- newStdGen
+    let newDices = reroll gen dices keeps
     putStrLn $ (++) (show roll) " roll \n==================="
     if roll == FinalRoll
         then do
@@ -43,11 +43,6 @@ playRoll roll dices keeps = do
         else do
             newKeeps <- getKeeps newDices keeps
             playRoll (succ roll) newDices newKeeps
-    
-reroll :: Dices -> Keeps -> IO Dices
-reroll oldDices keeps = do
-    newDices <- rollDices <$> newStdGen
-    return $ zipWith3 (\o n k -> if k then o else n) oldDices newDices keeps
 
 getKeeps :: Dices -> Keeps -> IO Keeps
 getKeeps dices keeps = do
@@ -63,6 +58,8 @@ getKeeps dices keeps = do
             putStrLn "> Use the numbers 1 - 5 to select dice, or ENTER to continue."
             getKeeps dices keeps
 
+-- Keeps functions
+
 toogleKeeps :: Int -> Keeps -> Keeps
 toogleKeeps n keeps = replace n newValue keeps
     where newValue = not $ keeps !! n
@@ -72,5 +69,12 @@ formatKeeps :: Dices -> Keeps -> String
 formatKeeps dices keeps = intercalate " " $ zipWith zipFn keeps $ show <$> dices
     where zipFn = (\ k i -> if k then "(" ++ i ++ ")" else " " ++ i ++ " ")
 
-rollDices :: (RandomGen g) => g -> Dices
-rollDices gen = take 5 $ randomRs (1,6) gen
+-- Dice functions
+
+roll :: (RandomGen g) => g -> Dices
+roll gen = take 5 $ randomRs (1,6) gen
+
+reroll :: (RandomGen g) => g -> Dices -> Keeps -> Dices
+reroll gen old keeps =
+    zipWith3 (\o n k -> if k then o else n) old new keeps
+        where new = roll gen
