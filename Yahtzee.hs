@@ -1,8 +1,9 @@
-
-import Data.List
+import System.IO
 import System.Random
+
 import Control.Applicative
 
+import Data.List
 import Data.Sequence (fromList, update)
 import Data.Foldable (toList)
 
@@ -11,6 +12,7 @@ nilRoll = replicate 5 0
 
 
 main = do
+    hSetBuffering stdin NoBuffering
     finalRoll <- play 1 nilRoll $ replicate 5 False
     printResult finalRoll
 
@@ -31,6 +33,7 @@ reroll oldRoll keeps = do
 getKeeps :: [Int] -> [Bool] -> IO [Bool]
 getKeeps roll keeps = do
     putStr $ (formatKeeps roll keeps) ++ "  Keep? "
+    hFlush stdout
     n <- getChar
     putStrLn ""
     case n of
