@@ -1,7 +1,7 @@
 module Yahtzee.Scoring (evaluate) where
 
 import Data.List
-import Yahtzee.Types
+import Yahtzee.Hand
 
 evaluate :: Hand -> IO ()
 evaluate (Hand hand) = do
