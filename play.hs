@@ -17,6 +17,8 @@ instance Show Roll where
     show SecondRoll = "2nd"
     show FinalRoll = "Final"
 
+type Dices = [Int]
+type Keeps = [Bool]
 
 keepNone = replicate 5 False
 keepAll  = replicate 5 True
@@ -29,7 +31,7 @@ main = do
     dices <- playRoll FirstRoll (replicate 5 0) keepNone
     evaluate dices
 
-playRoll :: Roll -> [Int] -> [Bool] -> IO [Int]
+playRoll :: Roll -> Dices -> Keeps -> IO Dices
 playRoll _ dices keeps | and keeps = return dices
 playRoll roll dices keeps = do
     newDices <- reroll dices keeps
@@ -42,12 +44,12 @@ playRoll roll dices keeps = do
             newKeeps <- getKeeps newDices keeps
             playRoll (succ roll) newDices newKeeps
     
-reroll :: [Int] -> [Bool] -> IO [Int]
+reroll :: Dices -> Keeps -> IO Dices
 reroll oldDices keeps = do
-    newDices <- rollDice <$> newStdGen
+    newDices <- rollDices <$> newStdGen
     return $ zipWith3 (\o n k -> if k then o else n) oldDices newDices keeps
 
-getKeeps :: [Int] -> [Bool] -> IO [Bool]
+getKeeps :: Dices -> Keeps -> IO Keeps
 getKeeps dices keeps = do
     putStr $ (formatKeeps dices keeps) ++ "  Keep? "
     hFlush stdout
@@ -61,14 +63,14 @@ getKeeps dices keeps = do
             putStrLn "> Use the numbers 1 - 5 to select dice, or ENTER to continue."
             getKeeps dices keeps
 
-toogleKeeps :: Int -> [Bool] -> [Bool]
+toogleKeeps :: Int -> Keeps -> Keeps
 toogleKeeps n keeps = replace n newValue keeps
     where newValue = not $ keeps !! n
           replace i val list = toList $ update i val $ fromList list
 
-formatKeeps :: [Int] -> [Bool] -> String
+formatKeeps :: Dices -> Keeps -> String
 formatKeeps dices keeps = intercalate " " $ zipWith zipFn keeps $ show <$> dices
     where zipFn = (\ k i -> if k then "(" ++ i ++ ")" else " " ++ i ++ " ")
 
-rollDice :: (RandomGen g) => g -> [Int]
-rollDice gen = take 5 $ randomRs (1,6) gen
+rollDices :: (RandomGen g) => g -> Dices
+rollDices gen = take 5 $ randomRs (1,6) gen
