@@ -23,7 +23,7 @@ instance Show Try where
 -- Game interactions
 
 playRoll :: Try -> Hand -> IO Hand
-playRoll _ hand | allKept hand = return hand
+playRoll _ hand | allHeld hand = return hand
 playRoll try hand = do
     gen <- newStdGen
     let newHand = reroll gen hand
@@ -33,20 +33,20 @@ playRoll try hand = do
             putStrLn $ show newHand
             return newHand
         else do
-            newHand' <- keepDices newHand
+            newHand' <- holdDices newHand
             playRoll (succ try) newHand'
 
-keepDices :: Hand -> IO Hand
-keepDices hand = do
-    putStr $ (++) (show hand) "  Keep? "
+holdDices :: Hand -> IO Hand
+holdDices hand = do
+    putStr $ (++) (show hand) "  Hold? "
     hFlush stdout
     n <- getChar
     putStrLn ""
     case n of
         n | n `elem` "12345"
-             -> keepDices $ keepOneToggle (read [n] - 1) hand
+             -> holdDices $ holdOneToggle (read [n] - 1) hand
         '\n' -> return hand
-        'a'  -> keepDices $ keepAll hand
+        'a'  -> holdDices $ holdAll hand
         _    -> do
             putStrLn "> Use the numbers 1 - 5 to select dice, or ENTER to continue."
-            keepDices hand
+            holdDices hand

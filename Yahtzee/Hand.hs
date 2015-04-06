@@ -24,24 +24,24 @@ roll gen = take 5 $ randomRs (1,6) gen
 reroll :: (RandomGen g) => g -> Hand -> Hand
 reroll gen EmptyHand = newHand $ roll gen
 reroll gen (Hand hand) =
-    Hand $ zip (zipWith3 (\o n k -> if k then o else n) old new keep) keep
+    Hand $ zip (zipWith3 (\o n h -> if h then o else n) old new hold) hold
         where new = roll gen
               old = map fst hand
-              keep = map snd hand
+              hold = map snd hand
 
--- Keeping dices
+-- Holding dices
 
-keepOneToggle :: Int -> Hand -> Hand
-keepOneToggle n (Hand hand) = Hand $ replace n toogled hand
+holdOneToggle :: Int -> Hand -> Hand
+holdOneToggle n (Hand hand) = Hand $ replace n toogled hand
         where 
-            (val, keep) = hand !! n
-            toogled = (val, not keep)
+            (val, hold) = hand !! n
+            toogled = (val, not hold)
             replace i val list = toList $ update i val $ fromList list
 
-keepAll :: Hand -> Hand
-keepAll (Hand hand) = Hand $ zip values $ replicate 5 True
+holdAll :: Hand -> Hand
+holdAll (Hand hand) = Hand $ zip values $ replicate 5 True
 	where values = map fst hand
 
-allKept :: Hand -> Bool
-allKept (Hand hand) = (and . map snd) hand
-allKept EmptyHand = False
+allHeld :: Hand -> Bool
+allHeld (Hand hand) = (and . map snd) hand
+allHeld EmptyHand = False
