@@ -26,7 +26,7 @@ playRoll :: Try -> Hand -> IO Hand
 playRoll _ hand | allHeld hand = return hand
 playRoll try hand = do
     gen <- newStdGen
-    let newHand = reroll gen hand
+    let newHand = rerollHand gen hand
     putStrLn $ (show try) ++ " roll \n==================="
     if try == FinalTry
         then do

@@ -21,13 +21,11 @@ newHand values = Hand $ zip values $ replicate 5 False
 roll :: (RandomGen g) => g -> [Int]
 roll gen = take 5 $ randomRs (1,6) gen
 
-reroll :: (RandomGen g) => g -> Hand -> Hand
-reroll gen EmptyHand = newHand $ roll gen
-reroll gen (Hand hand) =
-    Hand $ zip (zipWith3 (\o n h -> if h then o else n) old new hold) hold
-        where new = roll gen
-              old = map fst hand
-              hold = map snd hand
+rerollHand :: (RandomGen g) => g -> Hand -> Hand
+rerollHand gen EmptyHand = newHand $ roll gen
+rerollHand gen (Hand hand) = 
+    Hand $ zipWith (\ (o, h) n -> if h then (o, h) else (n, h)) hand $ roll gen
+
 
 -- Holding dices
 
@@ -40,7 +38,7 @@ holdOneToggle n (Hand hand) = Hand $ replace n toogled hand
 
 holdAll :: Hand -> Hand
 holdAll (Hand hand) = Hand $ zip values $ replicate 5 True
-	where values = map fst hand
+    where values = map fst hand
 
 allHeld :: Hand -> Bool
 allHeld (Hand hand) = (and . map snd) hand
