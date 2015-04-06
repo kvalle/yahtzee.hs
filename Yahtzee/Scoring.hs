@@ -1,16 +1,18 @@
 module Yahtzee.Scoring (evaluate) where
 
 import Data.List
+import Yahtzee.Types
 
-evaluate :: [Int] -> IO ()
-evaluate roll = do
+evaluate :: Hand -> IO ()
+evaluate (Hand hand) = do
+    let values = map fst hand
     putStrLn "\nResults\n========"
-    putStrLn $ (++) "Yahtzee:         " $ show $ isYahtzee roll
-    putStrLn $ (++) "Small straight:  " $ show $ isSmallStraight roll
-    putStrLn $ (++) "Large straight:  " $ show $ isLargeStraight roll
-    putStrLn $ (++) "Three of a kind: " $ show $ isThreeOfAKind roll
-    putStrLn $ (++) "Four of a kind:  " $ show $ isFourOfAKind roll
-    putStrLn $ (++) "Full house:      " $ show $ isFullHouse roll
+    putStrLn $ (++) "Yahtzee:         " $ show $ isYahtzee values
+    putStrLn $ (++) "Small straight:  " $ show $ isSmallStraight values
+    putStrLn $ (++) "Large straight:  " $ show $ isLargeStraight values
+    putStrLn $ (++) "Three of a kind: " $ show $ isThreeOfAKind values
+    putStrLn $ (++) "Four of a kind:  " $ show $ isFourOfAKind values
+    putStrLn $ (++) "Full house:      " $ show $ isFullHouse values
 
 isYahtzee :: [Int] -> Bool
 isYahtzee (x:rest) = all (== x) rest
