@@ -1,7 +1,16 @@
-module Yahtzee.Scoring where
+module Yahtzee.Scoring (evaluate) where
 
 import Data.List
 
+evaluate :: [Int] -> IO ()
+evaluate roll = do
+    putStrLn "\nResults\n========"
+    putStrLn $ (++) "Yahtzee:         " $ show $ isYahtzee roll
+    putStrLn $ (++) "Small straight:  " $ show $ isSmallStraight roll
+    putStrLn $ (++) "Large straight:  " $ show $ isLargeStraight roll
+    putStrLn $ (++) "Three of a kind: " $ show $ isThreeOfAKind roll
+    putStrLn $ (++) "Four of a kind:  " $ show $ isFourOfAKind roll
+    putStrLn $ (++) "Full house:      " $ show $ isFullHouse roll
 
 isYahtzee :: [Int] -> Bool
 isYahtzee (x:rest) = all (== x) rest
@@ -28,4 +37,3 @@ hasNAlike n = elem n . map length . group . sort
 
 isFullHouse :: [Int] -> Bool
 isFullHouse roll = [2,3] == (sort . map length . group . sort) roll
-

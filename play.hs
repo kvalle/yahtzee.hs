@@ -7,19 +7,20 @@ import Data.List
 import Data.Sequence (fromList, update)
 import Data.Foldable (toList)
 
-import Yahtzee.Scoring
+import Yahtzee.Scoring (evaluate)
 
 main = do
     hSetBuffering stdin NoBuffering
-    finalRoll <- play 1 (replicate 5 0) (replicate 5 False)
-    putStrLn $ "FINAL ROLL\n=========="
-    putStrLn $ formatRoll finalRoll
-    putStrLn ""
-    printResult finalRoll
+    roll <- play 1 (replicate 5 0) (replicate 5 False)
+    evaluate roll
 
 play :: Int -> [Int] -> [Bool] -> IO [Int]
-play n dices keeps  | n == 3 = reroll dices keeps
 play _ dices keeps | and keeps = return dices
+play n dices keeps  | n == 3 = do
+    putStrLn $ "FINAL ROLL\n=========="
+    roll <- reroll dices keeps
+    putStrLn $ (++) " " $ intercalate "   " $ map show roll
+    return roll
 play n dices keeps = do
     putStrLn $ "ROLL " ++ (show n) ++ "\n======"
     newRoll <- reroll dices keeps
@@ -42,7 +43,7 @@ getKeeps roll keeps = do
         '\n' -> return keeps
         'a' -> getKeeps roll $ replicate 5 True
         _    -> do
-            putStrLn "> Use the numbers 1 - 5 to keep dice, ENTER to continue."
+            putStrLn "> Use the numbers 1 - 5 to select dice, or ENTER to continue."
             getKeeps roll keeps
 
 toogleKeeps :: Int -> [Bool] -> [Bool]
@@ -54,21 +55,5 @@ formatKeeps :: [Int] -> [Bool] -> String
 formatKeeps roll keeps = intercalate " " $ zipWith zipFn keeps $ show <$> roll
     where zipFn = (\ k i -> if k then "(" ++ i ++ ")" else " " ++ i ++ " ")
 
-
--- Dice
-
 rollDice :: (RandomGen g) => g -> [Int]
 rollDice gen = take 5 $ randomRs (1,6) gen
-
-printResult :: [Int] -> IO ()
-printResult roll = do
-    putStrLn $ (++) "Yahtzee:         " $ show $ isYahtzee roll
-    putStrLn $ (++) "Small straight:  " $ show $ isSmallStraight roll
-    putStrLn $ (++) "Large straight:  " $ show $ isLargeStraight roll
-    putStrLn $ (++) "Three of a kind: " $ show $ isThreeOfAKind roll
-    putStrLn $ (++) "Four of a kind:  " $ show $ isFourOfAKind roll
-    putStrLn $ (++) "Full house:      " $ show $ isFullHouse roll
-
-formatRoll :: [Int] -> String
-formatRoll roll = " " ++ (intercalate "   " $ map show roll)
-
