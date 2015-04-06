@@ -1,4 +1,3 @@
-module Yahtzee where
 
 import Data.List
 import System.Random  
@@ -6,14 +5,24 @@ import System.Random
 main = do  
     gen <- getStdGen
     let roll = rollDice gen
-    printRoll roll
+
+    putStrLn $ formatRoll roll
+    putStrLn $ (++) "Yahtzee:         " $ show $ isYahtzee roll
+    putStrLn $ (++) "Small straight:  " $ show $ isSmallStraight roll
+    putStrLn $ (++) "Large straight:  " $ show $ isLargeStraight roll
+    putStrLn $ (++) "Three of a kind: " $ show $ isThreeOfAKind roll
+    putStrLn $ (++) "Four of a kind:  " $ show $ isFourOfAKind roll
+    putStrLn $ (++) "Full house:      " $ show $ isFullHouse roll
 
 rollDice :: (RandomGen g) => g -> [Int]  
 rollDice gen = sort $ take 5 $ randomRs (1,6) gen
 
-printRoll :: [Int] -> IO ()
-printRoll dices =
-    putStrLn $ "Your roll: " ++ (intercalate " " $ map show dices)
+formatKeeps :: [Bool] -> String
+formatKeeps keeps = intercalate " " $ map (\k -> "[" ++ if k then "x" else " " ++ "]") keeps
+
+formatRoll :: [Int] -> String
+formatRoll roll = " " ++ (intercalate "   " $ map show roll)
+
 
 isYahtzee :: [Int] -> Bool
 isYahtzee (x:rest) = all (== x) rest
