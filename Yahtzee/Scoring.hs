@@ -16,15 +16,15 @@ isYahtzee :: [Int] -> Bool
 isYahtzee (x:rest) = all (== x) rest
 
 isSmallStraight :: [Int] -> Bool
-isSmallStraight roll = or [[1,2,3,4] `isInfixOf` roll, 
-                           [2,3,4,5] `isInfixOf` roll,
-                           [3,4,5,6] `isInfixOf` roll]
-    where r = sort roll
+isSmallStraight roll = or [[1,2,3,4] `isInfixOf` r, 
+                           [2,3,4,5] `isInfixOf` r,
+                           [3,4,5,6] `isInfixOf` r]
+    where r = (map head . group . sort) roll
 
 isLargeStraight :: [Int] -> Bool
 isLargeStraight roll = or [[1,2,3,4,5] `isInfixOf` r, 
                            [2,3,4,5,6] `isInfixOf` r]
-    where r = sort roll
+    where r = (map head . group . sort) roll
 
 isThreeOfAKind :: [Int] -> Bool
 isThreeOfAKind = hasNAlike 3
