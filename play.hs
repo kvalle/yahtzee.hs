@@ -3,48 +3,63 @@ import System.Random
 
 import Control.Applicative
 
+import Data.Char (toUpper)
 import Data.List
 import Data.Sequence (fromList, update)
 import Data.Foldable (toList)
 
 import Yahtzee.Scoring (evaluate)
 
+data Roll = FirstRoll | SecondRoll | FinalRoll deriving (Eq, Ord, Enum)
+
+instance Show Roll where
+    show FirstRoll = "1st"
+    show SecondRoll = "2nd"
+    show FinalRoll = "Final"
+
+
+keepNone = replicate 5 False
+keepAll  = replicate 5 True
+
+
 main = do
+    randGen <- newStdGen
     hSetBuffering stdin NoBuffering
-    roll <- play 1 (replicate 5 0) (replicate 5 False)
-    evaluate roll
 
-play :: Int -> [Int] -> [Bool] -> IO [Int]
-play _ dices keeps | and keeps = return dices
-play n dices keeps  | n == 3 = do
-    putStrLn $ "FINAL ROLL\n=========="
-    roll <- reroll dices keeps
-    putStrLn $ (++) " " $ intercalate "   " $ map show roll
-    return roll
-play n dices keeps = do
-    putStrLn $ "ROLL " ++ (show n) ++ "\n======"
-    newRoll <- reroll dices keeps
-    newKeeps <- getKeeps newRoll keeps
-    play (n + 1) newRoll newKeeps
+    dices <- playRoll FirstRoll (replicate 5 0) keepNone
+    evaluate dices
 
+playRoll :: Roll -> [Int] -> [Bool] -> IO [Int]
+playRoll _ dices keeps | and keeps = return dices
+playRoll roll dices keeps = do
+    newDices <- reroll dices keeps
+    putStrLn $ (++) (show roll) " roll \n==================="
+    if roll == FinalRoll
+        then do
+            putStrLn $ (++) " " $ intercalate "   " $ map show newDices
+            return newDices
+        else do
+            newKeeps <- getKeeps newDices keeps
+            playRoll (succ roll) newDices newKeeps
+    
 reroll :: [Int] -> [Bool] -> IO [Int]
-reroll oldRoll keeps = do
-    newRoll <- rollDice <$> newStdGen
-    return $ zipWith3 (\o n k -> if k then o else n) oldRoll newRoll keeps
+reroll oldDices keeps = do
+    newDices <- rollDice <$> newStdGen
+    return $ zipWith3 (\o n k -> if k then o else n) oldDices newDices keeps
 
 getKeeps :: [Int] -> [Bool] -> IO [Bool]
-getKeeps roll keeps = do
-    putStr $ (formatKeeps roll keeps) ++ "  Keep? "
+getKeeps dices keeps = do
+    putStr $ (formatKeeps dices keeps) ++ "  Keep? "
     hFlush stdout
     n <- getChar
     putStrLn ""
     case n of
-        n | n `elem` "12345" -> getKeeps roll $ toogleKeeps (read [n] - 1) keeps
+        n | n `elem` "12345" -> getKeeps dices $ toogleKeeps (read [n] - 1) keeps
         '\n' -> return keeps
-        'a' -> getKeeps roll $ replicate 5 True
+        'a' -> getKeeps dices $ replicate 5 True
         _    -> do
             putStrLn "> Use the numbers 1 - 5 to select dice, or ENTER to continue."
-            getKeeps roll keeps
+            getKeeps dices keeps
 
 toogleKeeps :: Int -> [Bool] -> [Bool]
 toogleKeeps n keeps = replace n newValue keeps
@@ -52,7 +67,7 @@ toogleKeeps n keeps = replace n newValue keeps
           replace i val list = toList $ update i val $ fromList list
 
 formatKeeps :: [Int] -> [Bool] -> String
-formatKeeps roll keeps = intercalate " " $ zipWith zipFn keeps $ show <$> roll
+formatKeeps dices keeps = intercalate " " $ zipWith zipFn keeps $ show <$> dices
     where zipFn = (\ k i -> if k then "(" ++ i ++ ")" else " " ++ i ++ " ")
 
 rollDice :: (RandomGen g) => g -> [Int]
