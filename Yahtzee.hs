@@ -11,15 +11,14 @@ nilRoll = replicate 5 0
 
 
 main = do
-    finalRoll <- play 1 nilRoll emptyKeep
+    finalRoll <- play 1 nilRoll $ replicate 5 False
     printResult finalRoll
 
 play :: Int -> [Int] -> [Bool] -> IO [Int]
-play n dices _  | n > 3 = return dices
+play n dices keeps  | n > 3 = reroll dices keeps
 play _ dices keeps | and keeps = return dices
 play n dices keeps = do
     putStrLn $ "ROLL " ++ (show n) ++ "\n======"
-    --newRoll <- rollDice <$> newStdGen
     newRoll <- reroll dices keeps
     newKeeps <- getKeeps newRoll keeps
     play (n + 1) newRoll newKeeps
@@ -27,7 +26,6 @@ play n dices keeps = do
 reroll :: [Int] -> [Bool] -> IO [Int]
 reroll oldRoll keeps = do
     newRoll <- rollDice <$> newStdGen
-    putStrLn $ show newRoll
     return $ zipWith3 (\o n k -> if k then o else n) oldRoll newRoll keeps
 
 getKeeps :: [Int] -> [Bool] -> IO [Bool]
@@ -38,6 +36,7 @@ getKeeps roll keeps = do
     case n of
         n | n `elem` "12345" -> getKeeps roll $ toogleKeeps (read [n] - 1) keeps
         '\n' -> return keeps
+        'a' -> getKeeps roll $ replicate 5 True
         _    -> do
             putStrLn "> Use the numbers 1 - 5 to keep dice, ENTER to continue."
             getKeeps roll keeps
