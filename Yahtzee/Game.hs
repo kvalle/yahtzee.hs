@@ -1,5 +1,6 @@
 module Yahtzee.Game where
 
+import Text.Printf
 import System.IO (hFlush, stdout)
 import System.Random (newStdGen)
 
@@ -26,7 +27,7 @@ playRounds :: Int -> ScoreCard -> IO ScoreCard
 playRounds 0 card = return card
 playRounds n card = do
     hand <- playRoll FirstTry EmptyHand
-    evaluate hand
+    card <- score hand card
     playRounds (n - 1) card
 
 playRoll :: Try -> Hand -> IO Hand
@@ -58,21 +59,27 @@ holdDices hand = do
             putStrLn "> Use the numbers 1 - 5 to select dice, or ENTER to continue."
             holdDices hand
 
-evaluate :: Hand -> IO ()
-evaluate (Hand hand) = do
+score :: Hand -> ScoreCard -> IO ScoreCard
+score hand card = do
+    printHand hand
+    -- todo: update scorecard
+    return card
+
+printHand :: Hand -> IO ()
+printHand (Hand hand) = do
     let values = map fst hand
-    putStrLn "\nResults\n========"
-    putStrLn $ (++) "Ones:            " $ show $ scoreN 1 values
-    putStrLn $ (++) "Twos:            " $ show $ scoreN 2 values
-    putStrLn $ (++) "Threes:          " $ show $ scoreN 3 values
-    putStrLn $ (++) "Fours:           " $ show $ scoreN 4 values
-    putStrLn $ (++) "Fives:           " $ show $ scoreN 5 values
-    putStrLn $ (++) "Sixes:           " $ show $ scoreN 6 values
-    putStrLn $ (++) "Yahtzee:         " $ show $ scoreYahtzee values
-    putStrLn $ (++) "Small straight:  " $ show $ scoreSmallStraight values
-    putStrLn $ (++) "Large straight:  " $ show $ scoreLargeStraight values
-    putStrLn $ (++) "Three of a kind: " $ show $ scoreThreeOfAKind values
-    putStrLn $ (++) "Four of a kind:  " $ show $ scoreFourOfAKind values
-    putStrLn $ (++) "Full house:      " $ show $ scoreFullHouse values
-    putStrLn $ (++) "Chance:          " $ show $ scoreChance values
+    putStrLn "\nCategory\n========"
+    putStrLn $ printf "Ones:            %3d" $ scoreN 1 values
+    putStrLn $ printf "Twos:            %3d" $ scoreN 2 values
+    putStrLn $ printf "Threes:          %3d" $ scoreN 3 values
+    putStrLn $ printf "Fours:           %3d" $ scoreN 4 values
+    putStrLn $ printf "Fives:           %3d" $ scoreN 5 values
+    putStrLn $ printf "Sixes:           %3d" $ scoreN 6 values
+    putStrLn $ printf "Yahtzee:         %3d" $ scoreYahtzee values
+    putStrLn $ printf "Small straight:  %3d" $ scoreSmallStraight values
+    putStrLn $ printf "Large straight:  %3d" $ scoreLargeStraight values
+    putStrLn $ printf "Three of a kind: %3d" $ scoreThreeOfAKind values
+    putStrLn $ printf "Four of a kind:  %3d" $ scoreFourOfAKind values
+    putStrLn $ printf "Full house:      %3d" $ scoreFullHouse values
+    putStrLn $ printf "Chance:          %3d" $ scoreChance values
     putStrLn ""

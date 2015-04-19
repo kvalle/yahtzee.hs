@@ -6,9 +6,23 @@ data Score = Score Int | NoValue deriving (Show)
 
 data ScoreCard = ScoreCard { ones :: Score
                            , twos :: Score
+                           , threes :: Score
+                           , fours :: Score
+                           , fives :: Score
+                           , sixes :: Score
+                           , yahtzee :: Score
+                           , smallStraight :: Score
+                           , largeStraight :: Score
+                           , threeOfAKind :: Score
+                           , fourOfAKind :: Score
+                           , fullHouse :: Score
+                           , chance :: Score
                            } deriving (Show)
 
-newScoreCard = ScoreCard NoValue NoValue
+newScoreCard = ScoreCard 
+    NoValue NoValue NoValue NoValue NoValue 
+    NoValue NoValue NoValue NoValue NoValue 
+    NoValue NoValue NoValue
 
 -- Upper section
 
