@@ -1,86 +1,14 @@
 module Yahtzee.Scoring where
 
+import Text.Show.Functions
+import Data.Tuple.Select
 import Data.List
 
-data Score = Score Int | NoValue deriving (Show)
-
-data ScoreCard = ScoreCard { ones :: Score
-                           , twos :: Score
-                           , threes :: Score
-                           , fours :: Score
-                           , fives :: Score
-                           , sixes :: Score
-                           , smallStraight :: Score
-                           , largeStraight :: Score
-                           , threeOfAKind :: Score
-                           , fourOfAKind :: Score
-                           , fullHouse :: Score
-                           , yahtzee :: Score
-                           , chance :: Score
-                           } deriving (Show)
-
-emptyScoreCard = ScoreCard 
-    NoValue NoValue NoValue NoValue NoValue 
-    NoValue NoValue NoValue NoValue NoValue 
-    NoValue NoValue NoValue
-
-readCard :: Char -> ScoreCard -> Score
-readCard 'a' = ones
-readCard 'b' = twos
-readCard 'c' = threes
-readCard 'd' = fours
-readCard 'e' = fives
-readCard 'f' = sixes
-readCard 'g' = smallStraight
-readCard 'h' = largeStraight
-readCard 'i' = threeOfAKind
-readCard 'j' = fourOfAKind
-readCard 'k' = fullHouse
-readCard 'l' = yahtzee
-readCard 'm' = chance
-
-updateCard :: Char -> ScoreCard -> Score -> ScoreCard
-updateCard 'a' card value = card {ones = value}
-updateCard 'b' card value = card {twos = value}
-updateCard 'c' card value = card {threes = value}
-updateCard 'd' card value = card {fours = value}
-updateCard 'e' card value = card {fives = value}
-updateCard 'f' card value = card {sixes = value}
-updateCard 'g' card value = card {smallStraight = value}
-updateCard 'h' card value = card {largeStraight = value}
-updateCard 'i' card value = card {threeOfAKind = value}
-updateCard 'j' card value = card {fourOfAKind = value}
-updateCard 'k' card value = card {fullHouse = value}
-updateCard 'l' card value = card {yahtzee = value}
-updateCard 'm' card value = card {chance = value}
-
-score :: Char -> [Int] -> Int
-score 'a' = scoreN 1
-score 'b' = scoreN 2
-score 'c' = scoreN 3
-score 'd' = scoreN 4
-score 'e' = scoreN 5
-score 'f' = scoreN 6
-score 'g' = scoreSmallStraight
-score 'h' = scoreLargeStraight
-score 'i' = scoreThreeOfAKind
-score 'j' = scoreFourOfAKind
-score 'k' = scoreFullHouse
-score 'l' = scoreYahtzee
-score 'm' = scoreChance
 
 -- Upper section
 
 scoreN :: Int -> [Int] -> Int
 scoreN n = sum . filter (==n)
-
--- Yahtzee
-
-isYahtzee :: [Int] -> Bool
-isYahtzee (x:rest) = all (== x) rest
-
-scoreYahtzee :: [Int] -> Int
-scoreYahtzee vals = if isYahtzee vals then 50 else 0
 
 
 -- Straights
@@ -134,3 +62,12 @@ scoreFullHouse vals = if isFullHouse vals then 25 else 0
 
 scoreChance :: [Int] -> Int
 scoreChance = sum
+
+
+-- Yahtzee
+
+isYahtzee :: [Int] -> Bool
+isYahtzee (x:rest) = all (== x) rest
+
+scoreYahtzee :: [Int] -> Int
+scoreYahtzee vals = if isYahtzee vals then 50 else 0
