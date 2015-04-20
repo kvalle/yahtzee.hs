@@ -8,6 +8,7 @@ import Data.Tuple.Select
 import Yahtzee.Hand
 import Yahtzee.ScoreCard
 
+
 -- Types
 
 data Try = FirstTry | SecondTry | FinalTry deriving (Eq, Ord, Enum)
