@@ -76,16 +76,13 @@ scoreHand hand card = do
 printRollResult :: Hand -> ScoreCard -> IO ()
 printRollResult (Hand hand) card = do
     putStrLn "\n  Scoring options:\n"
-    mapM_ putCat unscored
+    mapM_ putCat card
     putStrLn ""
 
     where
-        isScored (_, _, Score _, _) = True
-        isScored (_, _, NoValue, _) = False
-        unscored = filter (not . isScored) card
-
-        putCat (cid, category, score, scoreFn) = putRow cid category score (scoreFn (map fst hand))
-        putRow cid category NoValue handScore = putStrLn $ printf "  %c) %-17s %3d" cid category handScore
+        putCat (cid, cname, Score _, scoreFn) = return ()
+        putCat (cid, cname, NoValue, scoreFn) = 
+            putStrLn $ printf "  %c) %-17s %3d" cid cname (scoreFn (map fst hand))
 
 scoreCategory :: Hand -> ScoreCard -> IO ScoreCard
 scoreCategory (Hand hand) card = do
