@@ -9,13 +9,10 @@ import Data.Tuple.Select
 import Yahtzee.Hand
 import Yahtzee.ScoreCard
 
--- Game interactions
-
 play :: IO ()
 play = do
     card <- playRounds 1 emptyScoreCard
     putStrLn "\nGAME OVER"
-
 
 data Try = FirstTry | SecondTry | FinalTry deriving (Eq, Ord, Enum)
 
@@ -25,9 +22,9 @@ instance Show Try where
     show FinalTry  = "Final"
 
 playRounds :: Int -> ScoreCard -> IO ScoreCard
-playRounds 13 card = return card
+playRounds 14 card = return card
 playRounds n card = do
-    putStrLn $ printf "ROUND %d\n" n
+    putStrLn $ printf "\nROUND %d\n" n
     when (n == 1) putKeyHelp
     hand <- playRoll FirstTry EmptyHand
     card <- scoreHand hand card
@@ -37,13 +34,14 @@ putKeyHelp :: IO ()
 putKeyHelp = do
     putStrLn "  > [1-5]: toggle dice holding"
     putStrLn "  > ENTER: go to next roll"
+    putStrLn ""
 
 playRoll :: Try -> Hand -> IO Hand
 playRoll _ hand | allHeld hand = return hand
 playRoll try hand = do
     gen <- newStdGen
     let newHand = rerollHand gen hand
-    putStrLn $ printf "\n  %s roll \n  ===================" $ show try
+    putStrLn $ printf "  %s roll \n  ===================" $ show try
     if try == FinalTry
         then do
             putStrLn $ printf "  %s" $ show newHand
@@ -94,19 +92,23 @@ scoreCategory (Hand hand) card = do
     putStr "  Select category [a-m]: "
     hFlush stdout
     n <- getChar
-    putStrLn ""
     case n of
         n | n `elem` (map sel1 card) -> 
             case getCategory n card of
                 (cid, cname, NoValue, scoreFn) -> 
                     let values = map fst hand
                         updated = (cid, cname, Score (scoreFn values), scoreFn)
-                    in return $ updateCategory updated card
+                    in do 
+                        putStrLn ""
+                        return $ updateCategory updated card
                 (_, _, Score _, _) -> do
-                    putStrLn "  > Category already scored"
+                    putStrLn "\n  > Category already scored"
                     scoreCategory (Hand hand) card
+        '\n' -> do
+            putStrLn "  > Please choose a category"
+            scoreCategory (Hand hand) card
         otherwise -> do
-            putStrLn "  > Invalid category!"
+            putStrLn "\n  > Invalid category"
             scoreCategory (Hand hand) card
 
 printScoreCard :: ScoreCard -> IO ()

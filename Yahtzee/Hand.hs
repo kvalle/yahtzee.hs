@@ -5,7 +5,6 @@ import Data.List (intercalate)
 import Data.Sequence (fromList, update)
 import Data.Foldable (toList)
 
-
 data Hand = Hand [(Int, Bool)] | EmptyHand
 
 instance Show Hand where
@@ -14,9 +13,9 @@ instance Show Hand where
         where formatDie (i, k) = if k then "(" ++ (show i) ++ ")"
                                       else " " ++ (show i) ++ " "
 
-
 newHand :: [Int] -> Hand
 newHand values = Hand $ zip values $ replicate 5 False
+
 
 -- Rolling dice
 

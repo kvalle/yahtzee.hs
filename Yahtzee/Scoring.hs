@@ -4,7 +4,6 @@ import Text.Show.Functions
 import Data.Tuple.Select
 import Data.List
 
-
 -- Upper section
 
 scoreN :: Int -> [Int] -> Int
