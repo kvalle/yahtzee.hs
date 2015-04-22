@@ -46,7 +46,7 @@ scoreFourOfAKind :: [Int] -> Int
 scoreFourOfAKind vals = if isFourOfAKind vals then sum vals else 0
 
 hasNAlike :: Int -> [Int] -> Bool
-hasNAlike n = elem n . map length . group . sort
+hasNAlike n = any (>=n) . map length . group . sort
 
 
 -- House
