@@ -101,14 +101,13 @@ scoreCategory (Hand hand) card = do
                     in do 
                         putStrLn ""
                         return $ updateCategory updated card
-                (_, _, Score _, _) -> do
-                    putStrLn "\n  > Category already scored"
-                    scoreCategory (Hand hand) card
-        '\n' -> do
-            putStrLn "  > Please choose a category"
-            scoreCategory (Hand hand) card
-        otherwise -> do
-            putStrLn "\n  > Invalid category"
+                (_, _, Score _, _) -> tryAgain "\n  > Category already scored"
+        '\n'      -> tryAgain "  > Please choose a category"
+        otherwise -> tryAgain "\n  > Invalid category"
+
+    where 
+        tryAgain msg = do
+            putStrLn msg
             scoreCategory (Hand hand) card
 
 printScoreCard :: ScoreCard -> IO ()
