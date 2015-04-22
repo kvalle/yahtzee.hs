@@ -1,17 +1,27 @@
 module Yahtzee.ScoreCard where
 
+import Text.Printf
 import Text.Show.Functions
 import Data.Tuple.Select
 
 import Yahtzee.Scoring
 
+data Score = Score Int | NoValue
+
+instance Show Score where
+    show NoValue   = "  -"
+    show (Score n) = printf "%3d" n
 
 type CategoryName = String
 type CategoryId = Char
 type ScoreFn = [Int] -> Int
-data Score = Score Int | NoValue deriving (Show)
 type Category = (CategoryId, CategoryName, Score, ScoreFn)
 type ScoreCard = [Category]
+
+total :: [Score] -> Int
+total [] = 0
+total ((Score n):rest) = n + (total rest)
+total (NoValue:rest) = total rest
 
 getCategory :: CategoryId -> ScoreCard -> Category
 getCategory cid card = head $ dropWhile wrong card

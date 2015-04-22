@@ -8,8 +8,13 @@ import Data.Tuple.Select
 import Yahtzee.Hand
 import Yahtzee.ScoreCard
 
+-- Game interactions
 
--- Types
+play :: IO ()
+play = do
+    card <- playRounds 13 emptyScoreCard
+    putStrLn "\n\nGAME OVER"
+
 
 data Try = FirstTry | SecondTry | FinalTry deriving (Eq, Ord, Enum)
 
@@ -17,13 +22,6 @@ instance Show Try where
     show FirstTry  = "1st"
     show SecondTry = "2nd"
     show FinalTry  = "Final"
-
--- Game interactions
-
-play :: IO ()
-play = do
-    card <- playRounds 13 emptyScoreCard
-    putStrLn "\n\nGAME OVER"
 
 playRounds :: Int -> ScoreCard -> IO ScoreCard
 playRounds 0 card = return card
@@ -63,8 +61,9 @@ holdDices hand = do
 
 scoreHand :: Hand -> ScoreCard -> IO ScoreCard
 scoreHand hand card = do
-    printScore hand card
+    printRollResult hand card
     card <- scoreCategory hand card
+    printScoreCard card
     return card
 
 scoreCategory :: Hand -> ScoreCard -> IO ScoreCard
@@ -74,7 +73,7 @@ scoreCategory (Hand hand) card = do
     n <- getChar
     putStrLn ""
     case n of
-        n    | n `elem` (map sel1 card) -> 
+        n | n `elem` (map sel1 card) -> 
             case getCategory n card of
                 (cid, cname, NoValue, scoreFn) -> 
                     let values = map fst hand
@@ -87,12 +86,40 @@ scoreCategory (Hand hand) card = do
             putStrLn "> Invalid category!"
             scoreCategory (Hand hand) card
 
-printScore :: Hand -> ScoreCard -> IO ()
-printScore (Hand hand) card = do
+-- TODO clean up
+printRollResult :: Hand -> ScoreCard -> IO ()
+printRollResult (Hand hand) card = do
     putStrLn "\n"
-    mapM_ (\(cid, category, score, scoreFn) -> row cid category score (scoreFn (map fst hand))) card
+    mapM_ putCat unscored
+    putStrLn ""
 
     where
-        row cid category (Score score) _   = putStrLn $ printf "%c) %-19s %2d" cid category score
-        row cid category NoValue handScore = putStrLn $ printf "%c) %-19s %2d ?" cid category handScore
+        isScored (_, _, Score _, _) = True
+        isScored (_, _, NoValue, _) = False
+        unscored = filter (not . isScored) card
 
+        putCat (cid, category, score, scoreFn) = putRow cid category score (scoreFn (map fst hand))
+        putRow cid category NoValue handScore = putStrLn $ printf "%c) %-17s %3d" cid category handScore
+
+
+printScoreCard :: ScoreCard -> IO ()
+printScoreCard card = do
+    putStrLn "\n"
+    mapM_ putCat upper
+    putRight "Sum" $ show sumUpper
+    putRight "Bonus" $ show bonus
+    emptyRow
+    mapM_ putCat lower
+    emptyRow
+    putRight "Total" $ show (sumLower + sumUpper)
+
+    where
+        upper = take 6 card
+        lower = drop 6 card
+        sumUpper = total $ map sel3 upper
+        sumLower = total $ map sel3 lower
+        bonus = if sumUpper < 65 then 0 else 35
+        putCat (cid, category, score, scoreFn) = putLeft category $ show score
+        putLeft name value = putStrLn $ printf "[  %-17s %3s  ]" name value
+        putRight name value = putStrLn $ printf "[  %17s %3s  ]" name value
+        emptyRow = putStrLn "[                         ]"
