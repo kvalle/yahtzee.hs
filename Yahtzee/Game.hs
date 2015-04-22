@@ -72,7 +72,6 @@ scoreHand hand card = do
     printScoreCard card
     return card
 
--- TODO clean up
 printRollResult :: Hand -> ScoreCard -> IO ()
 printRollResult (Hand hand) card = do
     putStrLn "\n  Scoring options:\n"
