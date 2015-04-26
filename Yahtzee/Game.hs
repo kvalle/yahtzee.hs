@@ -126,7 +126,7 @@ printScoreCard card = do
         sumUpper = total $ map sel3 upper
         sumLower = total $ map sel3 lower
         bonus = if sumUpper <= 63 then 0 else 35
-        putCat (cid, category, score, scoreFn) = putLeft category $ show score
+        putCat (_, category, score, _) = putLeft category $ show score
         putLeft name value = putStrLn $ printf "  [  %-17s %3s  ]" name value
         putRight name value = putStrLn $ printf "  [  %17s %3s  ]" name value
         emptyRow = putStrLn "  [                         ]"
