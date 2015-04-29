@@ -44,7 +44,7 @@ playRoll try hand = do
     putStrLn $ printf "  %s roll \n  ===================" $ show try
     if try == FinalTry
         then do
-            putStrLn $ printf "  %s" $ show newHand
+            putStrLn $ printf "  %s" $ printHand newHand
             return newHand
         else do
             newHand' <- holdDices newHand
@@ -52,7 +52,7 @@ playRoll try hand = do
 
 holdDices :: Hand -> IO Hand
 holdDices hand = do
-    putStr $ printf "  %s  Hold? " $ show hand
+    putStr $ printf "  %s  Hold? " $ printHand hand
     hFlush stdout
     n <- getChar
     putStrLn ""

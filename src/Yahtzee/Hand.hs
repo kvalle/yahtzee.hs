@@ -5,13 +5,7 @@ import Data.List (intercalate)
 import Data.Sequence (fromList, update)
 import Data.Foldable (toList)
 
-data Hand = Hand [(Int, Bool)] | EmptyHand
-
-instance Show Hand where
-    show EmptyHand = " -   -   -   -   - "
-    show (Hand h) = intercalate " " $ map formatDie h
-        where formatDie (i, k) = if k then "(" ++ (show i) ++ ")"
-                                      else " " ++ (show i) ++ " "
+data Hand = Hand [(Int, Bool)] | EmptyHand deriving (Show)
 
 newHand :: [Int] -> Hand
 newHand values = Hand $ zip values $ replicate 5 False
@@ -27,8 +21,11 @@ rerollHand gen EmptyHand = newHand $ roll gen
 rerollHand gen (Hand hand) = 
     Hand $ zipWith (\ (o, h) n -> if h then (o, h) else (n, h)) hand $ roll gen
 
-
--- Holding dices
+printHand :: Hand -> String
+printHand EmptyHand = " -   -   -   -   - "
+printHand (Hand h) = intercalate " " $ map formatDie h
+    where formatDie (i, k) = if k then "(" ++ (show i) ++ ")"
+                                  else " " ++ (show i) ++ " "
 
 holdOneToggle :: Int -> Hand -> Hand
 holdOneToggle n (Hand hand) = Hand $ replace n toogled hand
