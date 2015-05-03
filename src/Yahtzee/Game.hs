@@ -40,11 +40,11 @@ playRoll :: Try -> Hand -> IO Hand
 playRoll _ hand | allHeld hand = return hand
 playRoll try hand = do
     gen <- newStdGen
-    let newHand = rerollHand gen hand
+    let newHand = reroll gen hand
     putStrLn $ printf "  %s roll \n  ===================" $ show try
     if try == FinalTry
         then do
-            putStrLn $ printf "  %s" $ printHand newHand
+            putStrLn $ printf "  %s" $ formatHand newHand
             return newHand
         else do
             newHand' <- holdDices newHand
@@ -52,13 +52,13 @@ playRoll try hand = do
 
 holdDices :: Hand -> IO Hand
 holdDices hand = do
-    putStr $ printf "  %s  Hold? " $ printHand hand
+    putStr $ printf "  %s  Hold? " $ formatHand hand
     hFlush stdout
     n <- getChar
     putStrLn ""
     case n of
         n | n `elem` "12345"
-             -> holdDices $ holdOneToggle (read [n] - 1) hand
+             -> holdDices $ hold (read [n] - 1) hand
         '\n' -> return hand
         'a'  -> holdDices $ holdAll hand
         _    -> do
