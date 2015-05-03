@@ -1,18 +1,23 @@
 module Yahtzee.Hand where
 
-import System.Random (RandomGen, randomRs)
+import System.Random (RandomGen, randomRs, mkStdGen)
 import Data.List (intercalate)
 import Data.Sequence (fromList, update)
 import Data.Foldable (toList)
 
 data Hand = Hand [(Int, Bool)] | EmptyHand deriving (Show)
 
+-- | Creates a new Hand from list of dice values
+--
+-- >>> newHand [1..3]
+-- Hand [(1,False),(2,False),(3,False)]
 newHand :: [Int] -> Hand
 newHand values = Hand $ zip values $ replicate 5 False
 
-
--- Rolling dice
-
+-- | Returns a list of five dice (ints) given a random generator.
+--
+-- >>> roll (mkStdGen 1)
+-- [6,5,2,6,5]
 roll :: (RandomGen g) => g -> [Int]
 roll gen = take 5 $ randomRs (1,6) gen
 
